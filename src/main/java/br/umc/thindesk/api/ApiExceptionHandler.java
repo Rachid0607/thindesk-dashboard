@@ -43,6 +43,9 @@ public class ApiExceptionHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
 
+	/** 422 Unprocessable Content (o nome da constante mudou entre versoes do Spring). */
+	private static final HttpStatusCode UNPROCESSABLE = HttpStatusCode.valueOf(422);
+
 	@ExceptionHandler(ParametroInvalidoException.class)
 	public ResponseEntity<ProblemDetail> parametroInvalido(ParametroInvalidoException ex, HttpServletRequest req) {
 		ProblemDetail pd = problema(HttpStatus.BAD_REQUEST, "parametro-invalido", "Parâmetro inválido", ex.getMessage(), req);
@@ -54,7 +57,7 @@ public class ApiExceptionHandler {
 	public ResponseEntity<ProblemDetail> validacao(MethodArgumentNotValidException ex, HttpServletRequest req) {
 		boolean corpo = ex.getParameter().hasParameterAnnotation(RequestBody.class);
 		if (corpo) {
-			ProblemDetail pd = problema(HttpStatus.UNPROCESSABLE_CONTENT, "validacao", "Dados inválidos",
+			ProblemDetail pd = problema(UNPROCESSABLE, "validacao", "Dados inválidos",
 					"Um ou mais campos do corpo da requisição são inválidos.", req);
 			pd.setProperty("erros", erros(ex));
 			return responder(pd);
@@ -104,7 +107,7 @@ public class ApiExceptionHandler {
 
 	@ExceptionHandler(RegraNegocioException.class)
 	public ResponseEntity<ProblemDetail> regraNegocio(RegraNegocioException ex, HttpServletRequest req) {
-		return responder(problema(HttpStatus.UNPROCESSABLE_CONTENT, "regra-negocio", "Regra de negócio violada",
+		return responder(problema(UNPROCESSABLE, "regra-negocio", "Regra de negócio violada",
 				ex.getMessage(), req));
 	}
 
