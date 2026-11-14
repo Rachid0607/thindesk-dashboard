@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -45,14 +46,16 @@ public class SecurityConfig {
 		return new ProviderManager(List.of(bloqueioLoginAuthenticationProvider, daoAuthenticationProvider));
 	}
 
+	/** Cadeia das telas (Thymeleaf). A da API tem prioridade: ver ApiSecurityConfig. */
 	@Bean
+	@Order(2)
 	public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager,
 			AuthenticationSuccessHandler authenticationSuccessHandler,
 			AuthenticationFailureHandler authenticationFailureHandler, AuditoriaService auditoriaService) throws Exception {
 		http
 			.authenticationManager(authenticationManager)
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/", "/login", "/cadastro", "/tema", "/error", "/css/**", "/temas/**").permitAll()
+				.requestMatchers("/", "/login", "/cadastro", "/tema", "/error", "/css/**", "/js/**", "/vendor/**", "/temas/**").permitAll()
 				.requestMatchers("/admin/**").hasRole("ADMINISTRADOR")
 				.requestMatchers("/tecnico/**").hasAnyRole("TECNICO", "ADMINISTRADOR")
 				.requestMatchers("/solicitante/**").hasRole("SOLICITANTE")
