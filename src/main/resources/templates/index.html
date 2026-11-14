@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Início</title>
+</head>
+<body>
+    <div layout:fragment="conteudo">
+        <div class="card boas-vindas">
+            <img th:src="@{/images/logo.png}" alt="Thindesk - Service Manager" width="260" height="260">
+            <div>
+                <h1>Bem-vindo ao Thindesk</h1>
+                <p>Sistema de chamados técnicos: abertura, atendimento, clientes, horários de atendimento e um painel administrativo para acompanhar a operação de suporte.</p>
+                <p sec:authorize="isAnonymous()">Use o menu para entrar. Solicitantes podem criar a própria conta em "Cadastrar".</p>
+                <p sec:authorize="hasRole('ADMINISTRADOR')"><a th:href="@{/admin/dashboard}" class="btn btn-primary">Abrir o dashboard</a></p>
+                <p sec:authorize="hasRole('TECNICO')"><a th:href="@{/tecnico/chamados}" class="btn btn-primary">Ver meus atendimentos</a></p>
+                <p sec:authorize="hasRole('SOLICITANTE')"><a th:href="@{/solicitante/chamados}" class="btn btn-primary">Ver meus chamados</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

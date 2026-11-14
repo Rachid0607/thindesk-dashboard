@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Clientes</title>
+</head>
+<body>
+    <div layout:fragment="conteudo">
+        <div class="page-header">
+            <h1>Clientes</h1>
+            <p>Pessoas atendidas pelo suporte. O setor do cliente é usado nos chamados abertos em nome dele.</p>
+        </div>
+
+        <div class="card">
+            <div class="empty-state" th:if="${#lists.isEmpty(clientes)}">
+                <p>Nenhum cliente cadastrado ainda.</p>
+            </div>
+            <div class="tabela-scroll" th:unless="${#lists.isEmpty(clientes)}">
+                <table class="table">
+                    <thead>
+                        <tr><th>Nome</th><th>Telefone</th><th>Setor</th><th>E-mail</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="cliente : ${clientes}">
+                            <td th:text="${cliente.nome}">Nome</td>
+                            <td th:text="${cliente.telefone} ?: '-'">Telefone</td>
+                            <td th:text="${cliente.setor}">Setor</td>
+                            <td th:text="${cliente.email} ?: '-'">E-mail</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Novo cliente</h3>
+            <form th:action="@{/clientes}" th:object="${clienteForm}" method="post" class="form">
+                <div class="campo" th:classappend="${#fields.hasErrors('nome')} ? 'com-erro'">
+                    <label for="nome">Nome</label>
+                    <input type="text" id="nome" th:field="*{nome}">
+                    <p class="form-error" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}">Erro.</p>
+                </div>
+                <div class="campo" th:classappend="${#fields.hasErrors('telefone')} ? 'com-erro'">
+                    <label for="telefone">Telefone</label>
+                    <input type="tel" id="telefone" th:field="*{telefone}" placeholder="(11) 98765-4321">
+                    <p class="form-error" th:if="${#fields.hasErrors('telefone')}" th:errors="*{telefone}">Erro.</p>
+                </div>
+                <div class="campo" th:classappend="${#fields.hasErrors('setor')} ? 'com-erro'">
+                    <label for="setor">Setor</label>
+                    <input type="text" id="setor" th:field="*{setor}">
+                    <p class="form-error" th:if="${#fields.hasErrors('setor')}" th:errors="*{setor}">Erro.</p>
+                </div>
+                <div class="campo" th:classappend="${#fields.hasErrors('email')} ? 'com-erro'">
+                    <label for="email">E-mail (opcional)</label>
+                    <input type="email" id="email" th:field="*{email}">
+                    <p class="form-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Erro.</p>
+                </div>
+                <button type="submit" class="btn btn-primary">Cadastrar cliente</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

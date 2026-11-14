@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title th:text="${titulo}">Chamados</title>
+</head>
+<body>
+    <div layout:fragment="conteudo">
+        <div class="page-header">
+            <h1 th:text="${titulo}">Chamados</h1>
+            <p th:text="${subtitulo}">Lista de chamados.</p>
+        </div>
+
+        <div class="card">
+            <div class="empty-state" th:if="${#lists.isEmpty(chamados)}">
+                <p>Nenhum chamado encontrado.</p>
+            </div>
+            <div class="tabela-scroll" th:unless="${#lists.isEmpty(chamados)}">
+                <table class="table">
+                    <thead>
+                        <tr><th>Protocolo</th><th>Título</th><th>Tipo</th><th>Prioridade</th><th>Status</th><th>Abertura</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="c : ${chamados}">
+                            <td th:text="${c.protocolo}">TD-2026-000001</td>
+                            <td th:text="${c.titulo}">Título</td>
+                            <td th:text="${c.tipo.descricao}">Tipo</td>
+                            <td th:text="${c.prioridade.descricao}">Prioridade</td>
+                            <td><span class="badge" th:class="'badge badge-status-' + ${#strings.toLowerCase(c.status)}" th:text="${c.status.descricao}">Status</span></td>
+                            <td th:text="${@formatoData.dataHora(c.dataAbertura)}">01/01/2026</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

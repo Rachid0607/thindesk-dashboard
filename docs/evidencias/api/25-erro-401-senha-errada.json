@@ -1,0 +1,1 @@
+{"type":"/erros/nao-autenticado","title":"Não autenticado","status":401,"detail":"Faça login (sessão do sistema ou HTTP Basic) para acessar a API.","instance":"/api/v1/dashboard/indicadores","timestamp":"2026-11-14T19:11:20.537000326Z"}

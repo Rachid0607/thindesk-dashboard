@@ -1,0 +1,1 @@
+{"detail":"Informe o setor ou o cliente (clienteId) do chamado.","instance":"/api/v1/chamados","status":422,"title":"Regra de negócio violada","type":"/erros/regra-negocio","timestamp":"2026-11-14T19:11:22.163166784Z"}

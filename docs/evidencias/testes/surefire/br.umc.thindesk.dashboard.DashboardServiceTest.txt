@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: br.umc.thindesk.dashboard.DashboardServiceTest
+-------------------------------------------------------------------------------
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.363 s -- in br.umc.thindesk.dashboard.DashboardServiceTest

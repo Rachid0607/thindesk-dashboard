@@ -1,0 +1,1 @@
+{"detail":"Um ou mais parâmetros de consulta são inválidos.","instance":"/api/v1/dashboard/situacao","status":400,"title":"Parâmetro inválido","type":"/erros/parametro-invalido","timestamp":"2026-11-14T19:11:19.714589859Z","erros":[{"mensagem":"Valor 'PERDIDO' inválido para 'status'.","campo":"status"}]}
