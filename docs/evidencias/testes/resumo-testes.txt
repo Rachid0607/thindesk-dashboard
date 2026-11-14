@@ -1,0 +1,18 @@
+ T E S T S
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.692 s -- in br.umc.thindesk.ThindeskApplicationTests
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.156 s -- in Filtro do dashboard
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.363 s -- in Cálculos auxiliares do dashboard
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.208 s -- in Horário de atendimento
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.616 s -- in Carga de dados de demonstração
+Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.190 s -- in Ciclo de vida do chamado
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.036 s -- in Listagem de chamados
+Tests run: 18, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.193 s -- in Máquina de estados do chamado
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.019 s -- in Regra de SLA
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.808 s -- in Segurança
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.363 s -- in Dashboard
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.723 s -- in Chamados
+Tests run: 0, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.030 s -- in API REST /api/v1
+Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 19.67 s -- in Integração API + MongoDB
+Results:
+Tests run: 95, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS

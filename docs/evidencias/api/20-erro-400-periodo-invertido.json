@@ -1,0 +1,1 @@
+{"detail":"A data de início (2026-11-14) não pode ser posterior à data de fim (2025-01-01).","instance":"/api/v1/dashboard/indicadores","status":400,"title":"Parâmetro inválido","type":"/erros/parametro-invalido","timestamp":"2026-11-14T19:11:19.436495738Z","erros":[{"mensagem":"A data de início (2026-11-14) não pode ser posterior à data de fim (2025-01-01).","campo":"inicio"}]}
