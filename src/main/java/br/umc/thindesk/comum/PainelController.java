@@ -17,7 +17,7 @@ public class PainelController {
 	public String painel(@AuthenticationPrincipal UsuarioAutenticado usuario) {
 		return switch (usuario.getPerfil()) {
 			case ADMINISTRADOR -> "redirect:/admin/usuarios";
-			case TECNICO -> "redirect:/tecnico/solicitantes";
+			case TECNICO -> "redirect:/tecnico/chamados";
 			case SOLICITANTE -> "redirect:/solicitante";
 		};
 	}
