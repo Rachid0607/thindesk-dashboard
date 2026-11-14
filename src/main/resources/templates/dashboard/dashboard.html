@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Dashboard</title>
+    <th:block layout:fragment="estilos">
+        <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    </th:block>
+</head>
+<body>
+    <div layout:fragment="conteudo">
+        <div class="dashboard" id="dashboard" th:attr="data-tema=${appTema}, data-api=@{/api/v1}">
+
+            <div class="dash-cabecalho">
+                <div class="page-header">
+                    <h1>Dashboard de chamados</h1>
+                    <p id="periodo-descricao">Acompanhamento da operação de suporte.</p>
+                </div>
+                <div class="dash-atualizacao">
+                    <span class="dash-atualizado" id="ultima-atualizacao" aria-live="polite">Carregando...</span>
+                    <label class="dash-auto">
+                        <input type="checkbox" id="auto-atualizar">
+                        Atualizar a cada 60 s
+                    </label>
+                    <button type="button" class="btn btn-primary btn-small" id="btn-atualizar">Atualizar</button>
+                </div>
+            </div>
+
+            <!-- RF05: filtros -->
+            <form class="card dash-filtros" id="form-filtros" autocomplete="off">
+                <div class="dash-atalhos" role="group" aria-label="Período rápido">
+                    <button type="button" class="chip" data-dias="1">Hoje</button>
+                    <button type="button" class="chip" data-dias="7">7 dias</button>
+                    <button type="button" class="chip" data-dias="30">30 dias</button>
+                    <button type="button" class="chip" data-dias="90">90 dias</button>
+                    <button type="button" class="chip" data-dias="365">12 meses</button>
+                </div>
+                <div class="dash-campos">
+                    <label>Início<input type="date" name="inicio" id="f-inicio"></label>
+                    <label>Fim<input type="date" name="fim" id="f-fim"></label>
+                    <label>Tipo<select name="tipo" id="f-tipo"><option value="">Todos</option></select></label>
+                    <label>Status<select name="status" id="f-status"><option value="">Todos</option></select></label>
+                    <label>Prioridade<select name="prioridade" id="f-prioridade"><option value="">Todas</option></select></label>
+                    <label>Técnico<select name="tecnicoId" id="f-tecnico"><option value="">Todos</option></select></label>
+                    <label>Setor<select name="setor" id="f-setor"><option value="">Todos</option></select></label>
+                    <div class="dash-acoes">
+                        <button type="submit" class="btn btn-primary btn-small">Aplicar</button>
+                        <button type="button" class="btn btn-ghost btn-small" id="btn-limpar">Limpar</button>
+                    </div>
+                </div>
+                <p class="form-error dash-erro-filtro" id="erro-filtro" hidden></p>
+            </form>
+
+            <!-- RF01: indicadores -->
+            <section class="dash-bloco" id="bloco-indicadores" aria-label="Indicadores gerais">
+                <div class="dash-kpis" id="kpis"></div>
+                <div class="dash-estado" data-estado></div>
+            </section>
+
+            <div class="dash-grade">
+                <!-- RF02: atendimentos por periodo -->
+                <section class="card dash-bloco dash-largo" id="bloco-serie">
+                    <div class="dash-bloco-topo">
+                        <div>
+                            <h3>Chamados abertos x resolvidos</h3>
+                            <p class="dash-sub">Quantidade por período, no intervalo filtrado.</p>
+                        </div>
+                        <div class="segmentado" role="group" aria-label="Agrupamento">
+                            <button type="button" data-agrupamento="DIA" class="ativo">Dia</button>
+                            <button type="button" data-agrupamento="SEMANA">Semana</button>
+                            <button type="button" data-agrupamento="MES">Mês</button>
+                        </div>
+                    </div>
+                    <div class="dash-legenda" id="legenda-serie"></div>
+                    <div class="dash-grafico"><canvas id="grafico-serie" role="img" aria-label="Gráfico de chamados abertos e resolvidos por período"></canvas></div>
+                    <div class="dash-estado" data-estado></div>
+                </section>
+
+                <!-- RF03: situacao -->
+                <section class="card dash-bloco" id="bloco-situacao">
+                    <h3>Situação dos chamados</h3>
+                    <p class="dash-sub">Distribuição por status.</p>
+                    <div class="dash-grafico dash-grafico-medio"><canvas id="grafico-status" role="img" aria-label="Gráfico de chamados por status"></canvas></div>
+                    <h4 class="dash-subtitulo">Por prioridade</h4>
+                    <div class="dash-barras-prioridade" id="lista-prioridade"></div>
+                    <div class="dash-estado" data-estado></div>
+                </section>
+
+                <!-- RF04: tipos mais atendidos -->
+                <section class="card dash-bloco" id="bloco-tipos">
+                    <h3>Tipos mais atendidos</h3>
+                    <p class="dash-sub">Chamados resolvidos ou fechados, por tipo.</p>
+                    <div class="dash-grafico dash-grafico-medio"><canvas id="grafico-tipos" role="img" aria-label="Gráfico dos tipos de chamado mais atendidos"></canvas></div>
+                    <div class="dash-estado" data-estado></div>
+                </section>
+
+                <!-- Ranking de tecnicos -->
+                <section class="card dash-bloco" id="bloco-tecnicos">
+                    <h3>Ranking de técnicos</h3>
+                    <p class="dash-sub">Atendidos, tempo médio de resolução e cumprimento do SLA.</p>
+                    <div class="tabela-scroll">
+                        <table class="table dash-tabela">
+                            <thead><tr><th>#</th><th>Técnico</th><th class="num">Atendidos</th><th class="num">Em andamento</th><th class="num">Tempo médio</th><th class="num">No prazo</th></tr></thead>
+                            <tbody id="tabela-tecnicos"></tbody>
+                        </table>
+                    </div>
+                    <div class="dash-estado" data-estado></div>
+                </section>
+            </div>
+
+            <!-- Lista de chamados -->
+            <section class="card dash-bloco" id="bloco-chamados">
+                <div class="dash-bloco-topo">
+                    <div>
+                        <h3>Chamados do período</h3>
+                        <p class="dash-sub">Clique em um chamado para ver as considerações técnicas e o histórico.</p>
+                    </div>
+                    <input type="search" id="busca" class="dash-busca" placeholder="Buscar por protocolo ou título" aria-label="Buscar chamados">
+                </div>
+                <div class="tabela-scroll">
+                    <table class="table dash-tabela">
+                        <thead><tr><th>Protocolo</th><th>Título</th><th>Tipo</th><th>Prioridade</th><th>Status</th><th>Técnico</th><th>Abertura</th><th>SLA</th></tr></thead>
+                        <tbody id="tabela-chamados"></tbody>
+                    </table>
+                </div>
+                <div class="dash-paginacao">
+                    <span id="info-paginacao"></span>
+                    <div>
+                        <button type="button" class="btn btn-ghost btn-small" id="pag-anterior">Anterior</button>
+                        <button type="button" class="btn btn-ghost btn-small" id="pag-proxima">Próxima</button>
+                    </div>
+                </div>
+                <div class="dash-estado" data-estado></div>
+            </section>
+
+            <dialog class="dash-modal" id="modal-chamado" aria-labelledby="modal-titulo">
+                <div class="dash-modal-topo">
+                    <h3 id="modal-titulo">Chamado</h3>
+                    <button type="button" class="btn btn-ghost btn-small" id="modal-fechar" aria-label="Fechar">Fechar</button>
+                </div>
+                <div id="modal-conteudo"></div>
+            </dialog>
+        </div>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script th:src="@{/vendor/chartjs/chart.umd.min.js}"></script>
+        <script th:src="@{/js/dashboard.js}"></script>
+    </th:block>
+</body>
+</html>

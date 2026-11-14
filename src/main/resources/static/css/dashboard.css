@@ -1,0 +1,485 @@
+/* ===== Dashboard administrativo =====
+   Usa as variaveis dos temas (temas/padrao e temas/escuro). As cores das
+   series dos graficos sao definidas aqui por tema: azul para "abertos" e
+   laranja para "resolvidos" (par validado para daltonismo), e uma escala de
+   azul para as barras de quantidade. */
+
+.dashboard {
+    --serie-1: #2a78d6;
+    --serie-2: #eb6834;
+    --barra: #2a78d6;
+    --barra-suave: #86b6ef;
+    --status-critico: #d03b3b;
+    --status-bom: #0ca30c;
+    --grade: var(--cor-tabela-borda-suave);
+}
+
+.dashboard[data-tema="escuro"] {
+    --serie-1: #3987e5;
+    --serie-2: #d95926;
+    --barra: #3987e5;
+    --barra-suave: #1c5cab;
+}
+
+.dashboard .card {
+    margin-bottom: 0;
+}
+
+.dash-cabecalho {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.dash-cabecalho .page-header {
+    margin-bottom: 0;
+}
+
+.dash-atualizacao {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: var(--cor-texto-secundario);
+}
+
+.dash-auto {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+/* ----- filtros ----- */
+.dash-filtros {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 20px !important;
+}
+
+.dash-atalhos {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.chip {
+    border: 1px solid var(--cor-borda-input);
+    background: transparent;
+    color: var(--cor-texto);
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.chip:hover {
+    background: var(--cor-tabela-hover);
+}
+
+.chip.ativo {
+    background: var(--cor-primaria);
+    border-color: var(--cor-primaria);
+    color: var(--cor-sobre-primaria);
+    font-weight: 600;
+}
+
+.dash-campos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    align-items: end;
+}
+
+.dash-campos label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--cor-texto-secundario);
+}
+
+.dash-campos input,
+.dash-campos select,
+.dash-busca {
+    font: inherit;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--cor-texto);
+    background: var(--cor-card-fundo);
+    border: 1px solid var(--cor-borda-input);
+    border-radius: 8px;
+    padding: 7px 9px;
+    min-width: 0;
+}
+
+.dash-campos input:focus,
+.dash-campos select:focus,
+.dash-busca:focus {
+    outline: none;
+    border-color: var(--cor-primaria);
+    box-shadow: 0 0 0 3px var(--cor-primaria-anel);
+}
+
+.dash-acoes {
+    display: flex;
+    gap: 8px;
+}
+
+.dash-erro-filtro {
+    margin: 0;
+}
+
+/* ----- indicadores (RF01) ----- */
+.dash-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.kpi {
+    background: var(--cor-card-fundo);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio);
+    box-shadow: var(--cor-sombra);
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 108px;
+}
+
+.kpi-rotulo {
+    font-size: 13px;
+    color: var(--cor-texto-secundario);
+    font-weight: 600;
+}
+
+.kpi-valor {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--cor-texto);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+.kpi-detalhe {
+    font-size: 12px;
+    color: var(--cor-texto-secundario);
+}
+
+.kpi-alerta .kpi-valor {
+    color: var(--cor-erro-texto);
+}
+
+.variacao-alta::before { content: "▲ "; }
+.variacao-baixa::before { content: "▼ "; }
+
+/* ----- grade de blocos ----- */
+.dash-grade {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.dash-largo {
+    grid-column: 1 / -1;
+}
+
+.dash-bloco {
+    position: relative;
+}
+
+.dash-bloco h3 {
+    font-size: 16px;
+}
+
+.dash-sub {
+    margin: 4px 0 14px;
+    font-size: 13px;
+    color: var(--cor-texto-secundario);
+}
+
+.dash-subtitulo {
+    margin: 18px 0 10px;
+    font-size: 13px;
+    color: var(--cor-texto-secundario);
+}
+
+.dash-bloco-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.dash-grafico {
+    position: relative;
+    height: 300px;
+}
+
+.dash-grafico-medio {
+    height: 260px;
+}
+
+.dash-legenda {
+    display: flex;
+    gap: 18px;
+    font-size: 13px;
+    color: var(--cor-texto-secundario);
+    margin-bottom: 8px;
+}
+
+.dash-legenda span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dash-legenda i {
+    display: inline-block;
+    width: 14px;
+    height: 3px;
+    border-radius: 2px;
+}
+
+.segmentado {
+    display: inline-flex;
+    border: 1px solid var(--cor-borda-input);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.segmentado button {
+    border: none;
+    background: transparent;
+    color: var(--cor-texto-secundario);
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.segmentado button + button {
+    border-left: 1px solid var(--cor-borda-input);
+}
+
+.segmentado button.ativo {
+    background: var(--cor-primaria-fundo-suave);
+    color: var(--cor-texto);
+    font-weight: 600;
+}
+
+/* barras de prioridade (HTML puro, com rotulo e valor visiveis) */
+.dash-barras-prioridade {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.barra-linha {
+    display: grid;
+    grid-template-columns: 90px 1fr 70px;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+}
+
+.barra-trilho {
+    height: 10px;
+    background: var(--cor-tabela-borda-suave);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.barra-preenchida {
+    height: 100%;
+    background: var(--barra);
+    border-radius: 0 4px 4px 0;
+}
+
+.barra-valor {
+    text-align: right;
+    color: var(--cor-texto-secundario);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ----- tabelas ----- */
+.dash-tabela th.num,
+.dash-tabela td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.dash-tabela tbody tr.clicavel {
+    cursor: pointer;
+}
+
+.dash-tabela tbody tr.clicavel:hover,
+.dash-tabela tbody tr.clicavel:focus {
+    background: var(--cor-tabela-hover);
+    outline: none;
+}
+
+.dash-busca {
+    width: 280px;
+    max-width: 100%;
+}
+
+.dash-paginacao {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--cor-texto-secundario);
+}
+
+.dash-paginacao div {
+    display: flex;
+    gap: 8px;
+}
+
+/* status dos chamados */
+.badge-status-aberto { background: var(--cor-badge-tecnico-fundo); color: var(--cor-badge-tecnico-texto); }
+.badge-status-em_atendimento { background: var(--cor-badge-bloqueio-fundo); color: var(--cor-badge-bloqueio-texto); }
+.badge-status-aguardando_solicitante { background: var(--cor-badge-administrador-fundo); color: var(--cor-badge-administrador-texto); }
+.badge-status-resolvido { background: var(--cor-badge-ativo-fundo); color: var(--cor-badge-ativo-texto); }
+.badge-status-fechado { background: var(--cor-badge-neutro-fundo); color: var(--cor-badge-neutro-texto); }
+.badge-status-cancelado { background: var(--cor-badge-inativo-fundo); color: var(--cor-badge-inativo-texto); }
+
+.sla-ok { color: var(--cor-sucesso-texto); font-weight: 600; }
+.sla-atrasado { color: var(--cor-erro-texto); font-weight: 600; }
+
+/* ----- estados de carregando / vazio / erro ----- */
+.dash-estado:empty {
+    display: none;
+}
+
+.dash-estado {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--cor-texto-secundario);
+    background: var(--cor-card-fundo);
+    border-radius: var(--raio);
+    z-index: 2;
+}
+
+#bloco-indicadores .dash-estado {
+    position: static;
+    border: 1px solid var(--cor-borda);
+    min-height: 108px;
+    margin-bottom: 20px;
+}
+
+.dash-estado.erro {
+    color: var(--cor-erro-texto);
+}
+
+.carregando::before {
+    content: "";
+    width: 22px;
+    height: 22px;
+    border: 3px solid var(--cor-borda);
+    border-top-color: var(--cor-primaria);
+    border-radius: 50%;
+    animation: girar 0.8s linear infinite;
+}
+
+@keyframes girar {
+    to { transform: rotate(360deg); }
+}
+
+/* ----- tooltip das barras e modal ----- */
+.dash-modal {
+    width: min(760px, 94vw);
+    max-height: 88vh;
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-grande);
+    background: var(--cor-card-fundo);
+    color: var(--cor-texto);
+    padding: 22px 24px;
+    box-shadow: var(--cor-sombra-forte);
+}
+
+.dash-modal::backdrop {
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.dash-modal-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.detalhe-grade {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 12px 18px;
+    margin-bottom: 18px;
+}
+
+.detalhe-grade div span {
+    display: block;
+    font-size: 12px;
+    color: var(--cor-texto-secundario);
+}
+
+.detalhe-grade div strong {
+    font-size: 14px;
+}
+
+.linha-tempo {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.linha-tempo li {
+    border-left: 3px solid var(--cor-borda);
+    padding: 2px 0 2px 12px;
+    font-size: 14px;
+}
+
+.linha-tempo li small {
+    display: block;
+    color: var(--cor-texto-secundario);
+    font-size: 12px;
+}
+
+.dash-modal h4 {
+    margin: 16px 0 10px;
+    font-size: 14px;
+}
+
+@media (max-width: 860px) {
+    .dash-grade {
+        grid-template-columns: 1fr;
+    }
+
+    .dash-busca {
+        width: 100%;
+    }
+}

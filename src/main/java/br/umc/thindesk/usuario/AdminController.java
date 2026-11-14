@@ -33,7 +33,7 @@ public class AdminController {
 
 	@GetMapping
 	public String raiz() {
-		return "redirect:/admin/usuarios";
+		return "redirect:/admin/dashboard";
 	}
 
 	@GetMapping("/auditoria")
