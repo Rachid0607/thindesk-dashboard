@@ -24,15 +24,19 @@ import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import br.umc.thindesk.cliente.Cliente;
+import br.umc.thindesk.cliente.ClienteRepository;
 import br.umc.thindesk.config.RelogioConfig;
+import br.umc.thindesk.horario.HorarioAtendimento;
+import br.umc.thindesk.horario.HorarioAtendimentoRepository;
 import br.umc.thindesk.usuario.Perfil;
 import br.umc.thindesk.usuario.Usuario;
 import br.umc.thindesk.usuario.UsuarioRepository;
 import br.umc.thindesk.usuario.UsuarioService;
 
 /**
- * Popula o banco com tecnicos e chamados de demonstracao (12 meses de
- * historico), para o dashboard ter o que mostrar. So roda com
+ * Popula o banco com tecnicos, clientes, horarios de atendimento e chamados
+ * de demonstracao (12 meses de historico), para o dashboard ter o que mostrar. So roda com
  * thindesk.seed.enabled=true (variavel THINDESK_SEED) e so quando a colecao de
  * chamados esta vazia, entao pode ficar ligada sem duplicar dados.
  * A semente do Random e fixa: a mesma data de execucao gera os mesmos dados.
@@ -99,6 +103,8 @@ public class CargaInicialChamados implements ApplicationRunner {
 			TipoChamado.OUTROS, new String[] { "Usuário orientado por chamada de vídeo.", "Pedido encaminhado ao setor de compras." });
 
 	private final ChamadoRepository chamadoRepository;
+	private final ClienteRepository clienteRepository;
+	private final HorarioAtendimentoRepository horarioRepository;
 	private final UsuarioRepository usuarioRepository;
 	private final UsuarioService usuarioService;
 	private final PasswordEncoder passwordEncoder;
@@ -106,10 +112,13 @@ public class CargaInicialChamados implements ApplicationRunner {
 	private final Environment environment;
 	private final Clock clock;
 
-	public CargaInicialChamados(ChamadoRepository chamadoRepository, UsuarioRepository usuarioRepository,
+	public CargaInicialChamados(ChamadoRepository chamadoRepository, ClienteRepository clienteRepository,
+			HorarioAtendimentoRepository horarioRepository, UsuarioRepository usuarioRepository,
 			UsuarioService usuarioService, PasswordEncoder passwordEncoder, GeradorProtocolo geradorProtocolo,
 			Environment environment, Clock clock) {
 		this.chamadoRepository = chamadoRepository;
+		this.clienteRepository = clienteRepository;
+		this.horarioRepository = horarioRepository;
 		this.usuarioRepository = usuarioRepository;
 		this.usuarioService = usuarioService;
 		this.passwordEncoder = passwordEncoder;
@@ -121,11 +130,13 @@ public class CargaInicialChamados implements ApplicationRunner {
 	@Override
 	public void run(ApplicationArguments args) {
 		List<Pessoa> tecnicos = garantirTecnicos();
+		garantirHorarios();
 		if (chamadoRepository.count() > 0) {
 			log.info("Carga inicial ignorada: a colecao de chamados ja possui dados.");
 			return;
 		}
-		List<Chamado> chamados = gerar(tecnicos, clock.instant(), new Random(2026));
+		List<Cliente> clientes = garantirClientes();
+		List<Chamado> chamados = gerar(tecnicos, clientes, clock.instant(), new Random(2026));
 		chamadoRepository.saveAll(chamados);
 		log.info("Carga inicial concluida: {} chamados de demonstracao criados.", chamados.size());
 	}
@@ -152,14 +163,47 @@ public class CargaInicialChamados implements ApplicationRunner {
 		return tecnicos;
 	}
 
+	/** Clientes de demonstracao (os solicitantes dos chamados), cada um em um setor. */
+	private List<Cliente> garantirClientes() {
+		if (clienteRepository.count() > 0) {
+			return clienteRepository.findAll();
+		}
+		List<Cliente> clientes = new ArrayList<>();
+		for (int i = 0; i < SOLICITANTES.length; i++) {
+			Cliente c = new Cliente();
+			c.setNome(SOLICITANTES[i]);
+			c.setSetor(SETORES[i % SETORES.length]);
+			c.setTelefone(String.format("(11) 9%04d-%04d", 1000 + i * 37, 2000 + i * 53));
+			c.setCriadoEm(clock.instant());
+			clientes.add(c);
+		}
+		return clienteRepository.saveAll(clientes);
+	}
+
+	/** Expediente padrao: segunda a sexta, 08:00-18:00; o Atendimento tambem abre sabado de manha. */
+	private void garantirHorarios() {
+		if (horarioRepository.count() > 0) {
+			return;
+		}
+		List<HorarioAtendimento> horarios = new ArrayList<>();
+		for (String setor : SETORES) {
+			for (DayOfWeek dia : List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY,
+					DayOfWeek.FRIDAY)) {
+				horarios.add(new HorarioAtendimento(setor, dia, "08:00", "18:00"));
+			}
+		}
+		horarios.add(new HorarioAtendimento("Atendimento", DayOfWeek.SATURDAY, "08:00", "12:00"));
+		horarioRepository.saveAll(horarios);
+	}
+
 	/**
 	 * Gera os chamados em memoria (sem acesso ao banco, exceto o ajuste final
 	 * dos contadores de protocolo).
 	 */
-	List<Chamado> gerar(List<Pessoa> tecnicos, Instant agora, Random random) {
+	List<Chamado> gerar(List<Pessoa> tecnicos, List<Cliente> clientes, Instant agora, Random random) {
 		List<Chamado> chamados = new ArrayList<>();
 		for (int i = 0; i < QUANTIDADE; i++) {
-			chamados.add(gerarUm(tecnicos, agora, random, i));
+			chamados.add(gerarUm(tecnicos, clientes.get(random.nextInt(clientes.size())), agora, random));
 		}
 		chamados.sort(Comparator.comparing(Chamado::getDataAbertura));
 
@@ -173,18 +217,18 @@ public class CargaInicialChamados implements ApplicationRunner {
 		return chamados;
 	}
 
-	private Chamado gerarUm(List<Pessoa> tecnicos, Instant agora, Random random, int indice) {
+	private Chamado gerarUm(List<Pessoa> tecnicos, Cliente cliente, Instant agora, Random random) {
 		Instant abertura = sortearAbertura(agora, random);
 		TipoChamado tipo = sortearTipo(random);
 		Prioridade prioridade = sortearPrioridade(random);
-		String nomeSolicitante = SOLICITANTES[random.nextInt(SOLICITANTES.length)];
-		Pessoa solicitante = new Pessoa("demo-solicitante-" + (indice % SOLICITANTES.length), nomeSolicitante);
+		String nomeSolicitante = cliente.getNome();
+		Pessoa solicitante = new Pessoa(cliente.getId(), nomeSolicitante);
 		Pessoa tecnico = tecnicos.get(random.nextInt(tecnicos.size()));
 
 		Chamado chamado = new Chamado();
 		chamado.setTipo(tipo);
 		chamado.setPrioridade(prioridade);
-		chamado.setSetor(SETORES[random.nextInt(SETORES.length)]);
+		chamado.setSetor(cliente.getSetor());
 		chamado.setSolicitante(solicitante);
 		String[] titulos = TITULOS.get(tipo);
 		chamado.setTitulo(titulos[random.nextInt(titulos.length)]);
@@ -254,7 +298,11 @@ public class CargaInicialChamados implements ApplicationRunner {
 		chamado.setStatus(destino);
 	}
 
-	/** Abertura nos ultimos 365 dias, em dia util e horario comercial, com mais volume nos meses recentes. */
+	/**
+	 * Abertura nos ultimos 365 dias, quase sempre em dia util e horario
+	 * comercial (uma parte cai a noite ou no fim de semana, fora do
+	 * expediente), com mais volume nos meses recentes.
+	 */
 	private static Instant sortearAbertura(Instant agora, Random random) {
 		LocalDate hoje = agora.atZone(RelogioConfig.FUSO).toLocalDate();
 		while (true) {
@@ -264,7 +312,8 @@ public class CargaInicialChamados implements ApplicationRunner {
 					&& random.nextDouble() < 0.9) {
 				continue;
 			}
-			ZonedDateTime momento = dia.atTime(8 + random.nextInt(10), random.nextInt(60)).atZone(RelogioConfig.FUSO);
+			int hora = random.nextDouble() < 0.07 ? 18 + random.nextInt(4) : 8 + random.nextInt(10);
+			ZonedDateTime momento = dia.atTime(hora, random.nextInt(60)).atZone(RelogioConfig.FUSO);
 			Instant abertura = momento.toInstant();
 			if (!abertura.isAfter(agora)) {
 				return abertura;

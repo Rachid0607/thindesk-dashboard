@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/base}">
+<head>
+    <title>Horário de atendimento</title>
+</head>
+<body>
+    <div layout:fragment="conteudo">
+        <div class="page-header">
+            <h1>Horário de atendimento por setor</h1>
+            <p>O dashboard usa esta grade para mostrar quantos chamados foram abertos fora do expediente de cada setor.</p>
+        </div>
+
+        <div class="card">
+            <h3>Adicionar ou alterar horário</h3>
+            <form th:action="@{/configuracoes/horarios}" th:object="${horarioForm}" method="post" class="form">
+                <div class="campo" th:classappend="${#fields.hasErrors('setor')} ? 'com-erro'">
+                    <label for="setor">Setor</label>
+                    <input type="text" id="setor" th:field="*{setor}">
+                    <p class="form-error" th:if="${#fields.hasErrors('setor')}" th:errors="*{setor}">Erro.</p>
+                </div>
+                <div class="campo" th:classappend="${#fields.hasErrors('diaSemana')} ? 'com-erro'">
+                    <label for="diaSemana">Dia da semana</label>
+                    <select id="diaSemana" th:field="*{diaSemana}">
+                        <option th:each="d : ${dias}" th:value="${d}" th:text="${@formatoData.diaSemana(d)}">Dia</option>
+                    </select>
+                    <p class="form-error" th:if="${#fields.hasErrors('diaSemana')}" th:errors="*{diaSemana}">Erro.</p>
+                </div>
+                <div class="campo" th:classappend="${#fields.hasErrors('horarioInicio')} ? 'com-erro'">
+                    <label for="horarioInicio">Início</label>
+                    <input type="time" id="horarioInicio" th:field="*{horarioInicio}">
+                    <p class="form-error" th:if="${#fields.hasErrors('horarioInicio')}" th:errors="*{horarioInicio}">Erro.</p>
+                </div>
+                <div class="campo" th:classappend="${#fields.hasErrors('horarioFim')} ? 'com-erro'">
+                    <label for="horarioFim">Fim</label>
+                    <input type="time" id="horarioFim" th:field="*{horarioFim}">
+                    <p class="form-error" th:if="${#fields.hasErrors('horarioFim')}" th:errors="*{horarioFim}">Erro.</p>
+                </div>
+                <button type="submit" class="btn btn-primary">Salvar horário</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="empty-state" th:if="${#lists.isEmpty(horarios)}">
+                <p>Nenhum horário cadastrado. Sem horário, o setor é considerado sem restrição de expediente.</p>
+            </div>
+            <div class="tabela-scroll" th:unless="${#lists.isEmpty(horarios)}">
+                <table class="table">
+                    <thead>
+                        <tr><th>Setor</th><th>Dia</th><th>Início</th><th>Fim</th><th class="table-actions">Ações</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="h : ${horarios}">
+                            <td th:text="${h.setor}">Setor</td>
+                            <td th:text="${@formatoData.diaSemana(h.diaSemana)}">Dia</td>
+                            <td th:text="${h.horarioInicio}">08:00</td>
+                            <td th:text="${h.horarioFim}">18:00</td>
+                            <td class="table-actions">
+                                <form th:action="@{'/configuracoes/horarios/' + ${h.id} + '/excluir'}" method="post">
+                                    <button type="submit" class="btn btn-danger btn-small">Excluir</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

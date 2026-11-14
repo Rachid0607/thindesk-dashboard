@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import br.umc.thindesk.comum.ParametroInvalidoException;
+import br.umc.thindesk.horario.HorarioAtendimentoService;
 import br.umc.thindesk.usuario.UsuarioRepository;
 
 @DisplayName("Cálculos auxiliares do dashboard")
@@ -42,7 +43,7 @@ class DashboardServiceTest {
 	@Test
 	void limiteForaDaFaixaEhRecusadoAntesDeConsultarOBanco() {
 		DashboardService service = new DashboardService(mock(MongoTemplate.class), mock(UsuarioRepository.class),
-				Clock.systemUTC());
+				mock(HorarioAtendimentoService.class), Clock.systemUTC());
 		FiltroChamados filtro = new FiltroChamados(LocalDate.of(2026, 11, 1), LocalDate.of(2026, 11, 2), null, null,
 				null, null, null);
 		assertThatThrownBy(() -> service.tiposMaisAtendidos(filtro, 0)).isInstanceOf(ParametroInvalidoException.class);

@@ -6,13 +6,13 @@
     --cor-borda: #2e2e2e;
     --cor-borda-input: #3a3a3a;
 
-    /* marca (amarelo, mesmo destaque dos dois temas) */
-    --cor-primaria: #ffc400;
-    --cor-primaria-hover: #ffd54f;
+    /* marca (laranja da logo do Thindesk, mesmo destaque dos dois temas) */
+    --cor-primaria: #ff914d;
+    --cor-primaria-hover: #ffa86f;
     --cor-sobre-primaria: #121212;
-    --cor-link: #ffc400;
-    --cor-primaria-fundo-suave: #2a2308;
-    --cor-primaria-anel: rgba(255, 196, 0, 0.35);
+    --cor-link: #ff9d61;
+    --cor-primaria-fundo-suave: #33200f;
+    --cor-primaria-anel: rgba(255, 145, 77, 0.35);
 
     /* superficies */
     --cor-card-fundo: #1f1f1f;
@@ -23,10 +23,16 @@
     --fonte: "Segoe UI", system-ui, -apple-system, sans-serif;
 
     /* barra superior */
-    --cor-topbar-fundo: #000000;
-    --cor-topbar-texto: #ffffff;
+    --cor-topbar-fundo: #181818;
+    --cor-topbar-texto: #e5e5e5;
     --cor-topbar-texto-secundario: #a3a3a3;
-    --cor-topbar-hover: #1f1f1f;
+    --cor-topbar-hover: #262626;
+
+    /* menu lateral */
+    --cor-sidebar-fundo: #0f0f0f;
+    --cor-sidebar-texto: #e5e5e5;
+    --cor-sidebar-texto-secundario: #8a8a8a;
+    --cor-sidebar-hover: #262626;
 
     /* navegacao */
     --cor-nav-fundo: #181818;

@@ -18,7 +18,8 @@ import org.springframework.security.web.SecurityFilterChain;
  * cookie, entao ficam fora da checagem de CSRF.
  *
  * Autorizacao por perfil:
- * - dashboard e opcoes de filtro: ADMINISTRADOR
+ * - dashboard, opcoes de filtro e horarios de atendimento: ADMINISTRADOR
+ * - clientes: ADMINISTRADOR ou TECNICO
  * - mudar status e registrar consideracao: ADMINISTRADOR ou TECNICO
  * - listar, detalhar e abrir chamados: qualquer usuario autenticado
  *   (o SOLICITANTE so enxerga os proprios chamados - regra no controller)
@@ -34,7 +35,9 @@ public class ApiSecurityConfig {
 			.securityMatcher("/api/**")
 			.authenticationManager(authenticationManager)
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/api/v1/dashboard/**", "/api/v1/filtros/**").hasRole("ADMINISTRADOR")
+				.requestMatchers("/api/v1/dashboard/**", "/api/v1/filtros/**", "/api/v1/horarios-atendimento/**")
+					.hasRole("ADMINISTRADOR")
+				.requestMatchers("/api/v1/clientes/**", "/api/v1/clientes").hasAnyRole("ADMINISTRADOR", "TECNICO")
 				.requestMatchers(HttpMethod.PATCH, "/api/v1/chamados/*/status").hasAnyRole("ADMINISTRADOR", "TECNICO")
 				.requestMatchers(HttpMethod.POST, "/api/v1/chamados/*/consideracoes").hasAnyRole("ADMINISTRADOR", "TECNICO")
 				.requestMatchers("/api/v1/chamados/**", "/api/v1/chamados").authenticated()

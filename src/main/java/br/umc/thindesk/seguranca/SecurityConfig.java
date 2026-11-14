@@ -55,8 +55,9 @@ public class SecurityConfig {
 		http
 			.authenticationManager(authenticationManager)
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/", "/login", "/cadastro", "/tema", "/error", "/css/**", "/js/**", "/vendor/**", "/temas/**").permitAll()
-				.requestMatchers("/admin/**").hasRole("ADMINISTRADOR")
+				.requestMatchers("/", "/login", "/cadastro", "/tema", "/error", "/css/**", "/js/**", "/vendor/**", "/images/**", "/temas/**").permitAll()
+				.requestMatchers("/admin/**", "/configuracoes/**").hasRole("ADMINISTRADOR")
+				.requestMatchers("/chamados/**", "/clientes/**").hasAnyRole("ADMINISTRADOR", "TECNICO")
 				.requestMatchers("/tecnico/**").hasAnyRole("TECNICO", "ADMINISTRADOR")
 				.requestMatchers("/solicitante/**").hasRole("SOLICITANTE")
 				.anyRequest().authenticated())

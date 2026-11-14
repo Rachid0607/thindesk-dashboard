@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${appNome}">Thindesk</title>
+    <link rel="icon" type="image/png" th:href="@{/images/icone.png}">
     <link rel="stylesheet" th:href="@{'/temas/' + ${appTema} + '/tema.css'}">
     <link rel="stylesheet" th:href="@{/css/layout.css}">
 </head>
@@ -13,7 +14,7 @@
             <div th:replace="~{fragments/alternador-tema :: alternadorTema}"></div>
 
             <div class="login-brand">
-                <p th:text="${appNome}">Thindesk</p>
+                <img th:src="@{/images/logo.png}" alt="Thindesk - Service Manager" class="login-logo" width="150" height="150">
                 <p class="subtitulo">Entre com seu e-mail e senha</p>
             </div>
 
