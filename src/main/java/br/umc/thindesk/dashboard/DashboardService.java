@@ -33,6 +33,8 @@ import br.umc.thindesk.chamado.StatusChamado;
 import br.umc.thindesk.chamado.TipoChamado;
 import br.umc.thindesk.comum.ParametroInvalidoException;
 import br.umc.thindesk.config.RelogioConfig;
+import br.umc.thindesk.horario.HorarioAtendimento;
+import br.umc.thindesk.horario.HorarioAtendimentoService;
 import br.umc.thindesk.usuario.Perfil;
 import br.umc.thindesk.usuario.UsuarioRepository;
 
@@ -54,11 +56,14 @@ public class DashboardService {
 
 	private final MongoTemplate mongoTemplate;
 	private final UsuarioRepository usuarioRepository;
+	private final HorarioAtendimentoService horarioService;
 	private final Clock clock;
 
-	public DashboardService(MongoTemplate mongoTemplate, UsuarioRepository usuarioRepository, Clock clock) {
+	public DashboardService(MongoTemplate mongoTemplate, UsuarioRepository usuarioRepository,
+			HorarioAtendimentoService horarioService, Clock clock) {
 		this.mongoTemplate = mongoTemplate;
 		this.usuarioRepository = usuarioRepository;
+		this.horarioService = horarioService;
 		this.clock = clock;
 	}
 
@@ -98,7 +103,30 @@ public class DashboardService {
 				horas(r, "mediaResolucaoMs"),
 				percentual(resolvidos + fechados, total - cancelados),
 				totalAnterior,
-				totalAnterior == 0 ? null : arredondar((total - totalAnterior) * 100.0 / totalAnterior));
+				totalAnterior == 0 ? null : arredondar((total - totalAnterior) * 100.0 / totalAnterior),
+				contarForaDoExpediente(filtro));
+	}
+
+	/**
+	 * Chamados do periodo abertos fora do horario de atendimento do setor.
+	 * Le so dois campos (dataAbertura e setor) e compara com a grade de
+	 * horarios carregada uma unica vez.
+	 */
+	long contarForaDoExpediente(FiltroChamados filtro) {
+		Map<String, Map<java.time.DayOfWeek, HorarioAtendimento>> grade = horarioService.grade();
+		if (grade.isEmpty()) {
+			return 0;
+		}
+		long fora = 0;
+		for (Document d : colecao().find(filtro.match("dataAbertura"))
+				.projection(new Document("dataAbertura", 1).append("setor", 1))) {
+			Date abertura = d.getDate("dataAbertura");
+			if (abertura != null && !HorarioAtendimentoService.dentroDoExpediente(grade, d.getString("setor"),
+					abertura.toInstant())) {
+				fora++;
+			}
+		}
+		return fora;
 	}
 
 	// ---------------------------------------------------------------- RF02

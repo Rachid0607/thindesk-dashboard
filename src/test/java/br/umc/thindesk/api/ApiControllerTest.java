@@ -47,6 +47,8 @@ import br.umc.thindesk.chamado.RegraSla;
 import br.umc.thindesk.chamado.StatusChamado;
 import br.umc.thindesk.chamado.TipoChamado;
 import br.umc.thindesk.chamado.TransicaoStatusInvalidaException;
+import br.umc.thindesk.cliente.Cliente;
+import br.umc.thindesk.cliente.ClienteService;
 import br.umc.thindesk.comum.ParametroInvalidoException;
 import br.umc.thindesk.comum.RecursoNaoEncontradoException;
 import br.umc.thindesk.config.RelogioConfig;
@@ -75,6 +77,8 @@ class ApiControllerTest {
 	private ChamadoService chamadoService;
 	@MockitoBean
 	private ChamadoConsultaService consultaService;
+	@MockitoBean
+	private ClienteService clienteService;
 	@MockitoBean
 	private AuthenticationManager authenticationManager;
 
@@ -158,12 +162,13 @@ class ApiControllerTest {
 		@Test
 		void indicadoresRespondemJson() throws Exception {
 			when(dashboardService.indicadores(any())).thenReturn(new IndicadoresDTO(LocalDate.of(2026, 10, 16),
-					LocalDate.of(2026, 11, 14), 10, 2, 1, 1, 3, 2, 1, 2, 80.0, 1.5, 20.0, 55.6, 8, 25.0));
+					LocalDate.of(2026, 11, 14), 10, 2, 1, 1, 3, 2, 1, 2, 80.0, 1.5, 20.0, 55.6, 8, 25.0, 3));
 			mvc.perform(get("/api/v1/dashboard/indicadores").with(user(ADMIN)))
 					.andExpect(status().isOk())
 					.andExpect(jsonPath("$.total").value(10))
 					.andExpect(jsonPath("$.percentualDentroSla").value(80.0))
-					.andExpect(jsonPath("$.inicio").value("2026-10-16"));
+					.andExpect(jsonPath("$.inicio").value("2026-10-16"))
+					.andExpect(jsonPath("$.abertosForaDoExpediente").value(3));
 		}
 
 		@Test
@@ -237,7 +242,40 @@ class ApiControllerTest {
 					.andExpect(jsonPath("$.type").value("/erros/validacao"))
 					.andExpect(jsonPath("$.erros[*].campo", hasItem("titulo")))
 					.andExpect(jsonPath("$.erros[*].campo", hasItem("tipo")))
-					.andExpect(jsonPath("$.erros[*].campo", hasItem("setor")));
+					.andExpect(jsonPath("$.erros[*].campo", hasItem("descricao")));
+		}
+
+		@Test
+		void semSetorESemClienteResponde422() throws Exception {
+			mvc.perform(post("/api/v1/chamados").with(user(ADMIN)).with(csrf())
+					.contentType(MediaType.APPLICATION_JSON)
+					.content("{\"titulo\":\"Sem internet\",\"descricao\":\"Cabo\",\"tipo\":\"REDE\",\"prioridade\":\"ALTA\"}"))
+					.andExpect(status().is(422))
+					.andExpect(jsonPath("$.type").value("/erros/regra-negocio"));
+		}
+
+		@Test
+		void tecnicoAbreChamadoEmNomeDeUmCliente() throws Exception {
+			Cliente cliente = new Cliente();
+			cliente.setId("cli-1");
+			cliente.setNome("Ana Paula");
+			cliente.setSetor("Financeiro");
+			when(clienteService.buscar("cli-1")).thenReturn(cliente);
+			when(chamadoService.abrir(any(), any(), any(), any(), eq("Financeiro"), eq(new Pessoa("cli-1", "Ana Paula"))))
+					.thenReturn(chamado("novo", new Pessoa("cli-1", "Ana Paula")));
+			mvc.perform(post("/api/v1/chamados").with(user(TECNICO)).with(csrf())
+					.contentType(MediaType.APPLICATION_JSON)
+					.content("{\"titulo\":\"Sem internet\",\"descricao\":\"Cabo\",\"tipo\":\"REDE\",\"prioridade\":\"ALTA\",\"clienteId\":\"cli-1\"}"))
+					.andExpect(status().isCreated())
+					.andExpect(jsonPath("$.solicitante.nome").value("Ana Paula"));
+		}
+
+		@Test
+		void solicitanteNaoAbreChamadoEmNomeDeOutroCliente() throws Exception {
+			mvc.perform(post("/api/v1/chamados").with(user(SOLICITANTE)).with(csrf())
+					.contentType(MediaType.APPLICATION_JSON)
+					.content("{\"titulo\":\"Sem internet\",\"descricao\":\"Cabo\",\"tipo\":\"REDE\",\"prioridade\":\"ALTA\",\"clienteId\":\"cli-1\"}"))
+					.andExpect(status().isForbidden());
 		}
 
 		@Test

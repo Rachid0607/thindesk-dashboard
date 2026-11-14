@@ -1,7 +1,10 @@
 package br.umc.thindesk.comum;
 
+import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
+import java.util.Locale;
 
 import org.springframework.stereotype.Component;
 
@@ -19,6 +22,15 @@ public class FormatoData {
 
 	public String dataHora(Instant instante) {
 		return instante == null ? "-" : DATA_HORA.format(instante);
+	}
+
+	/** Nome do dia da semana em portugues, com inicial maiuscula (ex.: "Segunda-feira"). */
+	public String diaSemana(DayOfWeek dia) {
+		if (dia == null) {
+			return "-";
+		}
+		String nome = dia.getDisplayName(TextStyle.FULL, Locale.forLanguageTag("pt-BR"));
+		return Character.toUpperCase(nome.charAt(0)) + nome.substring(1);
 	}
 
 }

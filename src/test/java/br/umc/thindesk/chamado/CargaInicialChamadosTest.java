@@ -15,6 +15,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import br.umc.thindesk.cliente.Cliente;
+import br.umc.thindesk.cliente.ClienteRepository;
+import br.umc.thindesk.horario.HorarioAtendimentoRepository;
 import br.umc.thindesk.usuario.UsuarioRepository;
 import br.umc.thindesk.usuario.UsuarioService;
 
@@ -24,14 +27,23 @@ class CargaInicialChamadosTest {
 	private static final Instant AGORA = Instant.parse("2026-11-14T18:00:00Z");
 
 	private final CargaInicialChamados carga = new CargaInicialChamados(mock(ChamadoRepository.class),
-			mock(UsuarioRepository.class), mock(UsuarioService.class), mock(PasswordEncoder.class),
+			mock(ClienteRepository.class), mock(HorarioAtendimentoRepository.class), mock(UsuarioRepository.class), mock(UsuarioService.class), mock(PasswordEncoder.class),
 			mock(GeradorProtocolo.class), mock(Environment.class), Clock.systemUTC());
 
 	private final List<Pessoa> tecnicos = List.of(new Pessoa("t1", "Carlos"), new Pessoa("t2", "Fernanda"));
+	private final List<Cliente> clientes = List.of(cliente("c1", "Ana", "Financeiro"), cliente("c2", "Lucas", "Comercial"));
+
+	private static Cliente cliente(String id, String nome, String setor) {
+		Cliente c = new Cliente();
+		c.setId(id);
+		c.setNome(nome);
+		c.setSetor(setor);
+		return c;
+	}
 
 	@Test
 	void geraChamadosCoerentesComAMaquinaDeEstados() {
-		List<Chamado> chamados = carga.gerar(tecnicos, AGORA, new Random(2026));
+		List<Chamado> chamados = carga.gerar(tecnicos, clientes, AGORA, new Random(2026));
 
 		assertThat(chamados).hasSize(CargaInicialChamados.QUANTIDADE);
 		Set<String> protocolos = new HashSet<>();
@@ -54,6 +66,8 @@ class CargaInicialChamadosTest {
 				assertThat(c.getDataResolucao()).isNotNull().isAfter(c.getDataAbertura());
 				assertThat(c.getTecnico()).isNotNull();
 			}
+			assertThat(c.getSolicitante().usuarioId()).isIn("c1", "c2");
+			assertThat(c.getSetor()).isEqualTo(c.getSolicitante().usuarioId().equals("c1") ? "Financeiro" : "Comercial");
 			if (c.getStatus() == StatusChamado.ABERTO) {
 				assertThat(c.getTecnico()).isNull();
 			}
@@ -62,7 +76,7 @@ class CargaInicialChamadosTest {
 
 	@Test
 	void distribuicaoTemAtrasadosEVariosStatus() {
-		List<Chamado> chamados = carga.gerar(tecnicos, AGORA, new Random(2026));
+		List<Chamado> chamados = carga.gerar(tecnicos, clientes, AGORA, new Random(2026));
 		long atrasados = chamados.stream().filter(c -> RegraSla.estaAtrasado(c, AGORA)).count();
 		assertThat(atrasados).isBetween(20L, 120L);
 		assertThat(chamados).extracting(Chamado::getStatus).contains(StatusChamado.FECHADO, StatusChamado.CANCELADO,
@@ -71,8 +85,8 @@ class CargaInicialChamadosTest {
 
 	@Test
 	void mesmaSementeGeraOsMesmosDados() {
-		List<Chamado> a = carga.gerar(tecnicos, AGORA, new Random(7));
-		List<Chamado> b = carga.gerar(tecnicos, AGORA, new Random(7));
+		List<Chamado> a = carga.gerar(tecnicos, clientes, AGORA, new Random(7));
+		List<Chamado> b = carga.gerar(tecnicos, clientes, AGORA, new Random(7));
 		assertThat(a).extracting(Chamado::getProtocolo, Chamado::getStatus, Chamado::getDataAbertura)
 				.isEqualTo(b.stream().map(c -> org.assertj.core.groups.Tuple.tuple(c.getProtocolo(), c.getStatus(),
 						c.getDataAbertura())).toList());

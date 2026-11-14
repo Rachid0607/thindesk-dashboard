@@ -39,8 +39,162 @@ button {
 /* ===== Estrutura geral: topbar + navegacao + conteudo + rodape sempre no fim ===== */
 .app-shell {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     min-height: 100vh;
+}
+
+.app-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===== Menu lateral (identidade do Thindesk) ===== */
+.sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    background: var(--cor-sidebar-fundo);
+    color: var(--cor-sidebar-texto);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.sidebar-marca {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--cor-sidebar-texto);
+}
+
+.sidebar-marca:hover {
+    text-decoration: none;
+}
+
+.sidebar-marca img {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 3px;
+}
+
+.sidebar-marca strong {
+    display: block;
+    font-size: 17px;
+    letter-spacing: 0.08em;
+}
+
+.sidebar-marca small {
+    display: block;
+    font-size: 11px;
+    color: var(--cor-primaria);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 12px 20px;
+    gap: 2px;
+}
+
+.sidebar-secao {
+    margin: 16px 10px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--cor-sidebar-texto-secundario);
+}
+
+.sidebar-link {
+    display: block;
+    padding: 9px 12px;
+    border-radius: 8px;
+    border-left: 3px solid transparent;
+    color: var(--cor-sidebar-texto);
+    font-size: 14px;
+}
+
+.sidebar-link:hover {
+    background: var(--cor-sidebar-hover);
+    text-decoration: none;
+}
+
+.sidebar-link.active {
+    background: var(--cor-sidebar-hover);
+    border-left-color: var(--cor-primaria);
+    font-weight: 600;
+}
+
+.topbar-titulo {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--cor-topbar-texto-secundario);
+}
+
+.app-main .topbar {
+    border-bottom: 1px solid var(--cor-borda);
+}
+
+.boas-vindas {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+.boas-vindas img {
+    max-width: 100%;
+    height: auto;
+}
+
+.boas-vindas > div {
+    flex: 1;
+    min-width: 260px;
+}
+
+.boas-vindas h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.boas-vindas p {
+    color: var(--cor-texto-secundario);
+    line-height: 1.6;
+}
+
+.login-logo {
+    display: block;
+    margin: 0 auto 6px;
+}
+
+@media (max-width: 860px) {
+    .app-shell {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: static;
+    }
+
+    .sidebar-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 8px 12px;
+    }
+
+    .sidebar-secao {
+        display: none;
+    }
 }
 
 .topbar {

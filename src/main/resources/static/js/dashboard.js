@@ -322,7 +322,8 @@
             kpi("Resolvidos no prazo", formatarPercentual(d.percentualDentroSla), "dos chamados atendidos"),
             kpi("Tempo médio do 1º atendimento", formatarHoras(d.tempoMedioPrimeiroAtendimentoHoras), "da abertura até o início"),
             kpi("Tempo médio de resolução", formatarHoras(d.tempoMedioResolucaoHoras), "da abertura até a solução"),
-            kpi("Taxa de resolução", formatarPercentual(d.taxaResolucaoPercentual), "atendidos ÷ não cancelados")
+            kpi("Taxa de resolução", formatarPercentual(d.taxaResolucaoPercentual), "atendidos ÷ não cancelados"),
+            kpi("Abertos fora do expediente", numero.format(d.abertosForaDoExpediente || 0), "conforme o horário de atendimento de cada setor")
         ].join("");
         $("periodo-descricao").textContent = "Período de " + formatarDataISO(d.inicio) + " a " + formatarDataISO(d.fim) + ".";
         definirEstado("bloco-indicadores", d.total === 0 ? "vazio" : "ok");

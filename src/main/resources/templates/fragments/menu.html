@@ -2,16 +2,39 @@
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
-    <nav th:fragment="menu" class="main-nav">
-        <a th:href="@{/}" class="nav-link" th:classappend="${caminhoAtual == '/'} ? 'active'">Início</a>
-        <a th:href="@{/admin/dashboard}" class="nav-link" th:classappend="${caminhoAtual == '/admin/dashboard'} ? 'active'" sec:authorize="hasRole('ADMINISTRADOR')">Dashboard</a>
-        <a th:href="@{/admin/usuarios}" class="nav-link" th:classappend="${caminhoAtual == '/admin/usuarios'} ? 'active'" sec:authorize="hasRole('ADMINISTRADOR')">Administração</a>
-        <a th:href="@{/admin/auditoria}" class="nav-link" th:classappend="${caminhoAtual == '/admin/auditoria'} ? 'active'" sec:authorize="hasRole('ADMINISTRADOR')">Auditoria</a>
-        <a th:href="@{/tecnico/chamados}" class="nav-link" th:classappend="${caminhoAtual == '/tecnico/chamados'} ? 'active'" sec:authorize="hasRole('TECNICO')">Meus atendimentos</a>
-        <a th:href="@{/solicitante}" class="nav-link" th:classappend="${caminhoAtual == '/solicitante'} ? 'active'" sec:authorize="hasRole('SOLICITANTE')">Meus dados</a>
-        <a th:href="@{/solicitante/chamados}" class="nav-link" th:classappend="${caminhoAtual == '/solicitante/chamados'} ? 'active'" sec:authorize="hasRole('SOLICITANTE')">Meus chamados</a>
-        <a th:href="@{/login}" class="nav-link" th:classappend="${caminhoAtual == '/login'} ? 'active'" sec:authorize="isAnonymous()">Entrar</a>
-        <a th:href="@{/cadastro}" class="nav-link" th:classappend="${caminhoAtual == '/cadastro'} ? 'active'" sec:authorize="isAnonymous()">Cadastrar</a>
-    </nav>
+    <!-- Menu lateral no estilo do Thindesk original (barra escura com a logo) -->
+    <aside th:fragment="menu" class="sidebar">
+        <a th:href="@{/}" class="sidebar-marca" aria-label="Thindesk - início">
+            <img th:src="@{/images/icone.png}" alt="" width="40" height="35">
+            <span>
+                <strong>THINDESK</strong>
+                <small>Service Manager</small>
+            </span>
+        </a>
+
+        <nav class="sidebar-nav" aria-label="Menu principal">
+            <span class="sidebar-secao">Operação</span>
+            <a th:href="@{/}" class="sidebar-link" th:classappend="${caminhoAtual == '/'} ? 'active'">Início</a>
+            <a th:href="@{/admin/dashboard}" class="sidebar-link" th:classappend="${caminhoAtual == '/admin/dashboard'} ? 'active'" sec:authorize="hasRole('ADMINISTRADOR')">Dashboard</a>
+            <a th:href="@{/chamados}" class="sidebar-link" th:classappend="${caminhoAtual == '/chamados'} ? 'active'" sec:authorize="hasAnyRole('ADMINISTRADOR', 'TECNICO')">Chamados</a>
+            <a th:href="@{/tecnico/chamados}" class="sidebar-link" th:classappend="${caminhoAtual == '/tecnico/chamados'} ? 'active'" sec:authorize="hasRole('TECNICO')">Meus atendimentos</a>
+            <a th:href="@{/clientes}" class="sidebar-link" th:classappend="${caminhoAtual == '/clientes'} ? 'active'" sec:authorize="hasAnyRole('ADMINISTRADOR', 'TECNICO')">Clientes</a>
+            <a th:href="@{/solicitante}" class="sidebar-link" th:classappend="${caminhoAtual == '/solicitante'} ? 'active'" sec:authorize="hasRole('SOLICITANTE')">Meus dados</a>
+            <a th:href="@{/solicitante/chamados}" class="sidebar-link" th:classappend="${caminhoAtual == '/solicitante/chamados'} ? 'active'" sec:authorize="hasRole('SOLICITANTE')">Meus chamados</a>
+
+            <th:block sec:authorize="hasRole('ADMINISTRADOR')">
+                <span class="sidebar-secao">Configurações</span>
+                <a th:href="@{/admin/usuarios}" class="sidebar-link" th:classappend="${caminhoAtual == '/admin/usuarios'} ? 'active'">Usuários e técnicos</a>
+                <a th:href="@{/configuracoes/horarios}" class="sidebar-link" th:classappend="${caminhoAtual == '/configuracoes/horarios'} ? 'active'">Horário de atendimento</a>
+                <a th:href="@{/admin/auditoria}" class="sidebar-link" th:classappend="${caminhoAtual == '/admin/auditoria'} ? 'active'">Auditoria</a>
+            </th:block>
+
+            <th:block sec:authorize="isAnonymous()">
+                <span class="sidebar-secao">Acesso</span>
+                <a th:href="@{/login}" class="sidebar-link" th:classappend="${caminhoAtual == '/login'} ? 'active'">Entrar</a>
+                <a th:href="@{/cadastro}" class="sidebar-link" th:classappend="${caminhoAtual == '/cadastro'} ? 'active'">Cadastrar</a>
+            </th:block>
+        </nav>
+    </aside>
 </body>
 </html>

@@ -1,6 +1,7 @@
 package br.umc.thindesk;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -9,8 +10,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +41,9 @@ import br.umc.thindesk.chamado.Prioridade;
 import br.umc.thindesk.chamado.RegraSla;
 import br.umc.thindesk.chamado.StatusChamado;
 import br.umc.thindesk.chamado.TipoChamado;
+import br.umc.thindesk.config.RelogioConfig;
+import br.umc.thindesk.horario.HorarioAtendimento;
+import br.umc.thindesk.horario.HorarioAtendimentoRepository;
 import br.umc.thindesk.usuario.Perfil;
 import br.umc.thindesk.usuario.Usuario;
 import br.umc.thindesk.usuario.UsuarioRepository;
@@ -65,6 +72,8 @@ class ApiIntegracaoTest {
 	private UsuarioRepository usuarioRepository;
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+	@Autowired
+	private HorarioAtendimentoRepository horarioRepository;
 
 	private Usuario admin;
 	private Usuario tecnico1;
@@ -76,6 +85,8 @@ class ApiIntegracaoTest {
 		mongoTemplate.dropCollection("usuarios");
 		mongoTemplate.dropCollection("contadores");
 		mongoTemplate.dropCollection("tentativas_login");
+		mongoTemplate.dropCollection("clientes");
+		mongoTemplate.dropCollection("horariosAtendimento");
 
 		admin = usuario("admin@teste.local", "Administrador", Perfil.ADMINISTRADOR);
 		tecnico1 = usuario("tec1@teste.local", "Técnico Um", Perfil.TECNICO);
@@ -230,6 +241,63 @@ class ApiIntegracaoTest {
 				.andExpect(jsonPath("$.dataResolucao").exists())
 				.andExpect(jsonPath("$.historico.length()").value(3))
 				.andExpect(jsonPath("$.atrasado").value(false));
+	}
+
+	@Test
+	void chamadosAbertosForaDoExpedienteDoSetor() throws Exception {
+		for (DayOfWeek dia : List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY,
+				DayOfWeek.FRIDAY)) {
+			horarioRepository.save(new HorarioAtendimento("Financeiro", dia, "08:00", "18:00"));
+		}
+		mongoTemplate.dropCollection("chamados");
+		LocalDate hoje = LocalDate.now(RelogioConfig.FUSO);
+		Instant domingo = hoje.minusDays(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
+				.atTime(10, 0).atZone(RelogioConfig.FUSO).toInstant();
+		Instant quarta = hoje.minusDays(1).with(TemporalAdjusters.previousOrSame(DayOfWeek.WEDNESDAY))
+				.atTime(10, 0).atZone(RelogioConfig.FUSO).toInstant();
+		salvar("TD-T-7", StatusChamado.ABERTO, Prioridade.BAIXA, TipoChamado.REDE, domingo, null, null, null, null);
+		salvar("TD-T-8", StatusChamado.ABERTO, Prioridade.BAIXA, TipoChamado.REDE, quarta, null, null, null, null);
+
+		mvc.perform(get("/api/v1/dashboard/indicadores").with(httpBasic(admin.getEmail(), SENHA)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.total").value(2))
+				.andExpect(jsonPath("$.abertosForaDoExpediente").value(1));
+
+		mvc.perform(get("/api/v1/horarios-atendimento").param("setor", "Financeiro")
+				.with(httpBasic(admin.getEmail(), SENHA)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.length()").value(5))
+				.andExpect(jsonPath("$[0].diaSemana").value("MONDAY"));
+	}
+
+	@Test
+	void clientesPelaApiEChamadoEmNomeDoCliente() throws Exception {
+		MvcResult criado = mvc.perform(post("/api/v1/clientes").with(httpBasic(tecnico1.getEmail(), SENHA))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"nome\":\"Marina Prado\",\"telefone\":\"(11) 91234-5678\",\"setor\":\"Jurídico\"}"))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.setor").value("Jurídico"))
+				.andReturn();
+		String clienteId = JsonPath.read(criado.getResponse().getContentAsString(), "$.id");
+
+		mvc.perform(post("/api/v1/clientes").with(httpBasic(tecnico1.getEmail(), SENHA))
+				.contentType(MediaType.APPLICATION_JSON).content("{\"nome\":\"X\",\"telefone\":\"abc\"}"))
+				.andExpect(status().is(422))
+				.andExpect(jsonPath("$.erros[*].campo", hasItem("telefone")));
+
+		mvc.perform(get("/api/v1/clientes").param("setor", "Jurídico").with(httpBasic(admin.getEmail(), SENHA)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[0].nome").value("Marina Prado"));
+
+		mvc.perform(post("/api/v1/chamados").with(httpBasic(tecnico1.getEmail(), SENHA))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"titulo\":\"Acesso ao sistema de processos\",\"descricao\":\"Sem acesso\",\"tipo\":\"ACESSO_SENHA\",\"prioridade\":\"ALTA\",\"clienteId\":\"" + clienteId + "\"}"))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.setor").value("Jurídico"))
+				.andExpect(jsonPath("$.solicitante.nome").value("Marina Prado"));
+
+		mvc.perform(get("/api/v1/horarios-atendimento").with(httpBasic(tecnico1.getEmail(), SENHA)))
+				.andExpect(status().isForbidden());
 	}
 
 	@Test
