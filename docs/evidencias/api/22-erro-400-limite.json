@@ -1,0 +1,1 @@
+{"detail":"O parâmetro limite deve estar entre 1 e 8.","instance":"/api/v1/dashboard/tipos-mais-atendidos","status":400,"title":"Parâmetro inválido","type":"/erros/parametro-invalido","timestamp":"2026-11-14T19:11:19.985313672Z","erros":[{"mensagem":"O parâmetro limite deve estar entre 1 e 8.","campo":"limite"}]}

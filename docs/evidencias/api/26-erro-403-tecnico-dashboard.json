@@ -1,0 +1,1 @@
+{"type":"/erros/acesso-negado","title":"Acesso negado","status":403,"detail":"Seu perfil não tem permissão para este recurso.","instance":"/api/v1/dashboard/indicadores","timestamp":"2026-11-14T19:11:20.805445076Z"}

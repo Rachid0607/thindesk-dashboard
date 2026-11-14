@@ -1,0 +1,139 @@
+### Thindesk · exemplos de todas as requisicoes da API
+### Funciona no REST Client (VS Code) e no HTTP Client do IntelliJ.
+### Ajuste as variaveis abaixo (usuario ADMINISTRADOR criado pelo .env).
+
+@base = http://localhost:8080/api/v1
+@admin = admin@thindesk.local
+@senha = troque-pela-senha-do-admin
+@inicio = 2026-10-16
+@fim = 2026-11-14
+
+### RF01 - indicadores gerais
+GET {{base}}/dashboard/indicadores?inicio={{inicio}}&fim={{fim}}
+Authorization: Basic {{admin}} {{senha}}
+
+### RF01 com filtros combinados
+GET {{base}}/dashboard/indicadores?inicio={{inicio}}&fim={{fim}}&tipo=REDE,SOFTWARE&prioridade=ALTA,CRITICA
+Authorization: Basic {{admin}} {{senha}}
+
+### RF02 - abertos x resolvidos por semana
+GET {{base}}/dashboard/atendimentos-por-periodo?inicio={{inicio}}&fim={{fim}}&agrupamento=SEMANA
+Authorization: Basic {{admin}} {{senha}}
+
+### RF03 - situacao por status e prioridade
+GET {{base}}/dashboard/situacao?inicio={{inicio}}&fim={{fim}}
+Authorization: Basic {{admin}} {{senha}}
+
+### RF04 - tipos mais atendidos
+GET {{base}}/dashboard/tipos-mais-atendidos?inicio={{inicio}}&fim={{fim}}&limite=5
+Authorization: Basic {{admin}} {{senha}}
+
+### RF04 - ranking de tecnicos
+GET {{base}}/dashboard/ranking-tecnicos?inicio={{inicio}}&fim={{fim}}&limite=5
+Authorization: Basic {{admin}} {{senha}}
+
+### RF05 - opcoes de filtro
+GET {{base}}/filtros/opcoes
+Authorization: Basic {{admin}} {{senha}}
+
+### Listar chamados (pagina 0, 5 por pagina)
+GET {{base}}/chamados?page=0&size=5&sort=dataAbertura,desc
+Authorization: Basic {{admin}} {{senha}}
+
+### Buscar chamados por protocolo ou titulo
+GET {{base}}/chamados?busca=senha&status=FECHADO
+Authorization: Basic {{admin}} {{senha}}
+
+### Detalhar chamado (troque o id)
+GET {{base}}/chamados/COLOQUE_O_ID_AQUI
+Authorization: Basic {{admin}} {{senha}}
+
+### Abrir chamado
+POST {{base}}/chamados
+Authorization: Basic {{admin}} {{senha}}
+Content-Type: application/json
+
+{
+  "titulo": "Impressora do 2o andar sem toner",
+  "descricao": "A impressora da sala de reunioes nao imprime.",
+  "tipo": "IMPRESSORA",
+  "prioridade": "MEDIA",
+  "setor": "Comercial"
+}
+
+### Abrir chamado em nome de um cliente (o setor vem do cliente)
+POST {{base}}/chamados
+Authorization: Basic {{admin}} {{senha}}
+Content-Type: application/json
+
+{
+  "titulo": "Sem acesso ao sistema financeiro",
+  "descricao": "Usuario bloqueado apos troca de senha.",
+  "tipo": "ACESSO_SENHA",
+  "prioridade": "ALTA",
+  "clienteId": "COLOQUE_O_ID_DO_CLIENTE"
+}
+
+### Iniciar atendimento atribuindo um tecnico
+PATCH {{base}}/chamados/COLOQUE_O_ID_AQUI/status
+Authorization: Basic {{admin}} {{senha}}
+Content-Type: application/json
+
+{ "status": "EM_ATENDIMENTO", "tecnicoId": "COLOQUE_O_ID_DO_TECNICO" }
+
+### Registrar consideracao tecnica
+POST {{base}}/chamados/COLOQUE_O_ID_AQUI/consideracoes
+Authorization: Basic {{admin}} {{senha}}
+Content-Type: application/json
+
+{ "texto": "Toner substituido; impressao de teste ok." }
+
+### Resolver
+PATCH {{base}}/chamados/COLOQUE_O_ID_AQUI/status
+Authorization: Basic {{admin}} {{senha}}
+Content-Type: application/json
+
+{ "status": "RESOLVIDO", "comentario": "Resolvido no local." }
+
+### Listar clientes de um setor
+GET {{base}}/clientes?setor=Financeiro
+Authorization: Basic {{admin}} {{senha}}
+
+### Cadastrar cliente
+POST {{base}}/clientes
+Authorization: Basic {{admin}} {{senha}}
+Content-Type: application/json
+
+{ "nome": "Marina Prado", "telefone": "(11) 91234-5678", "setor": "Juridico", "email": "marina@empresa.com" }
+
+### Horarios de atendimento
+GET {{base}}/horarios-atendimento?setor=Atendimento
+Authorization: Basic {{admin}} {{senha}}
+
+### ---------- cenarios de erro ----------
+
+### 400 - periodo invertido
+GET {{base}}/dashboard/indicadores?inicio=2026-11-14&fim=2025-01-01
+Authorization: Basic {{admin}} {{senha}}
+
+### 400 - status desconhecido
+GET {{base}}/dashboard/situacao?status=PERDIDO
+Authorization: Basic {{admin}} {{senha}}
+
+### 400 - limite fora da faixa
+GET {{base}}/dashboard/tipos-mais-atendidos?limite=50
+Authorization: Basic {{admin}} {{senha}}
+
+### 401 - sem credenciais
+GET {{base}}/dashboard/indicadores
+
+### 404 - chamado inexistente
+GET {{base}}/chamados/000000000000000000000000
+Authorization: Basic {{admin}} {{senha}}
+
+### 422 - corpo invalido
+POST {{base}}/chamados
+Authorization: Basic {{admin}} {{senha}}
+Content-Type: application/json
+
+{ "titulo": "Oi", "descricao": "", "prioridade": "ALTA" }

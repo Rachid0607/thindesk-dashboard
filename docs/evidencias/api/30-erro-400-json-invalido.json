@@ -1,0 +1,1 @@
+{"detail":"O JSON enviado está malformado ou contém um valor inválido (verifique os campos de enumeração).","instance":"/api/v1/chamados","status":400,"title":"Corpo da requisição inválido","type":"/erros/corpo-invalido","timestamp":"2026-11-14T19:11:21.892200948Z"}
