@@ -4,9 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}">
     <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE" th:text="${appNome}">Thindesk</title>
     <link rel="stylesheet" th:href="@{'/temas/' + ${appTema} + '/tema.css'}">
     <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <th:block layout:fragment="estilos"></th:block>
 </head>
 <body>
     <div class="app-shell">
@@ -22,5 +25,6 @@
 
         <div th:replace="~{fragments/rodape :: rodape}"></div>
     </div>
+    <th:block layout:fragment="scripts"></th:block>
 </body>
 </html>
