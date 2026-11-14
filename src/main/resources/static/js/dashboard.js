@@ -28,6 +28,7 @@
         busca: "",
         timer: null,
         graficos: {},
+        nomesStatus: {},
         carregando: false
     };
 
@@ -288,6 +289,7 @@
             const op = await api("/filtros/opcoes");
             preencherSelect("f-tipo", op.tipos, "Todos");
             preencherSelect("f-status", op.status, "Todos");
+            op.status.forEach(function (s) { estado.nomesStatus[s.codigo] = s.descricao; });
             preencherSelect("f-prioridade", op.prioridades, "Todas");
             preencherSelect("f-tecnico", op.tecnicos, "Todos");
             preencherSelect("f-setor", op.setores, "Todos");
@@ -432,8 +434,8 @@
             "<span><i style=\"background:" + cor2 + "\"></i>Resolvidos (" + numero.format(totalResolvidos) + ")</span>";
 
         const datasets = [
-            { label: "Abertos", data: abertos, borderColor: cor1, backgroundColor: cor1, borderWidth: 2, pointRadius: pontos.length > 40 ? 0 : 3, pointHoverRadius: 5, tension: 0.25 },
-            { label: "Resolvidos", data: resolvidos, borderColor: cor2, backgroundColor: cor2, borderWidth: 2, pointRadius: pontos.length > 40 ? 0 : 3, pointHoverRadius: 5, tension: 0.25 }
+            { label: "Abertos", data: abertos, borderColor: cor1, backgroundColor: cor1, borderWidth: 2, pointRadius: pontos.length > 40 ? 0 : 3, pointHoverRadius: 5, cubicInterpolationMode: "monotone" },
+            { label: "Resolvidos", data: resolvidos, borderColor: cor2, backgroundColor: cor2, borderWidth: 2, pointRadius: pontos.length > 40 ? 0 : 3, pointHoverRadius: 5, cubicInterpolationMode: "monotone" }
         ];
 
         if (estado.graficos.serie) {
@@ -575,7 +577,8 @@
                 }).join("") + "</ul>" : "<p class=\"dash-sub\">Nenhuma consideração registrada.</p>") +
                 "<h4>Histórico de status</h4>" +
                 "<ul class=\"linha-tempo\">" + c.historico.map(function (h) {
-                    return "<li>" + (h.de ? esc(h.de) + " → " : "") + "<strong>" + esc(h.para) + "</strong><small>" + esc(h.usuario || "—") + " · " + formatarDataHora(h.data) + "</small></li>";
+                    const nome = function (codigo) { return estado.nomesStatus[codigo] || codigo; };
+                    return "<li>" + (h.de ? esc(nome(h.de)) + " → " : "") + "<strong>" + esc(nome(h.para)) + "</strong><small>" + esc(h.usuario || "—") + " · " + formatarDataHora(h.data) + "</small></li>";
                 }).join("") + "</ul>";
         } catch (e) {
             $("modal-titulo").textContent = "Não foi possível abrir o chamado";

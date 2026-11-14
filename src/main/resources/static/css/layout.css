@@ -41,6 +41,8 @@ button {
     display: flex;
     flex-direction: row;
     min-height: 100vh;
+    /* faixa da cor do menu ate o fim da pagina, mesmo em paginas longas */
+    background: linear-gradient(to right, var(--cor-sidebar-fundo) 240px, var(--cor-fundo-pagina) 240px);
 }
 
 .app-main {
@@ -178,6 +180,7 @@ button {
 @media (max-width: 860px) {
     .app-shell {
         flex-direction: column;
+        background: var(--cor-fundo-pagina);
     }
 
     .sidebar {
